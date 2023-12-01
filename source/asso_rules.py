@@ -12,25 +12,10 @@ def getSupport(testSet, itemSetList):
             count += 1
     return count
 
-def associationRuleCount(freqItemSet, minimum_confidence):
-    rules = []
-    supportCache = {tuple(itemSet): support for itemSet, support in freqItemSet}
-    
-    for itemSet, itemSetSup in freqItemSet:
-        subsets = powerset(itemSet)
-        
-        for s in subsets:
-            if len(s) > 0:
-                confidence = float(itemSetSup / supportCache.get(s, 0))
-                if(confidence >= minimum_confidence):
-                    rules.append([set(s), set(itemSet.difference(s)), confidence])
-                    
-    return rules
-
 def calculate_confidence(args):
-    itemSet, itemSetSup, minConf, supportCache, detail_result = args
+    itemSet, itemSetSup, minConf, supportCache, detailed_result = args
     subsets = powerset(itemSet)
-    if detail_result:
+    if detailed_result:
         rules = []
     else:
         rules = 0
@@ -38,25 +23,25 @@ def calculate_confidence(args):
         if len(s) > 0:
             confidence = float(itemSetSup / supportCache.get(s, 0))
             if confidence >= minConf:
-                if detail_result:
+                if detailed_result:
                     rules.append([set(s), set(set(itemSet).difference(s)), confidence])
                 else:
                     rules += 1
     return rules
 
-def caluculate_association_rule_parallel(freqItemSet, minConf, detail_result=False):
+def caluculate_association_rule_parallel(freqItemSet, minConf, detailed_result=False):
     supportCache = mp.Manager().dict()
     supportCache = {tuple(itemSet): support for itemSet, support in freqItemSet}
 
     pool = mp.Pool(mp.cpu_count())  # 使用 CPU 核心數量的進程池
 
-    args_list = [(itemSet, itemSetSup, minConf, supportCache, detail_result) for itemSet, itemSetSup in freqItemSet]
+    args_list = [(itemSet, itemSetSup, minConf, supportCache, detailed_result) for itemSet, itemSetSup in freqItemSet]
     results = pool.map(calculate_confidence, args_list)
 
     pool.close()
     pool.join()
 
-    if detail_result:
+    if detailed_result:
         rules = []
         for result in results:
             rules.extend(result)
@@ -66,9 +51,9 @@ def caluculate_association_rule_parallel(freqItemSet, minConf, detail_result=Fal
 
     return rules
 
-def caluculate_association_rule(freqItemSet, minConf, detail_result=False):
+def caluculate_association_rule(freqItemSet, minConf, detailed_result=False):
     supportCache = {tuple(itemSet): support for itemSet, support in freqItemSet}
-    if detail_result:
+    if detailed_result:
         rules = []
     else:
         rules = 0
@@ -78,11 +63,11 @@ def caluculate_association_rule(freqItemSet, minConf, detail_result=False):
             if len(s) > 0:
                 confidence = float(itemSetSup / supportCache.get(s, 0))
                 if confidence >= minConf:
-                    if detail_result:
+                    if detailed_result:
                         rules.append([set(s), set(set(itemSet).difference(s)), confidence])
                     else:
                         rules += 1
-    if detail_result:
+    if detailed_result:
         rules = (rules, len(rules))
 
     return rules

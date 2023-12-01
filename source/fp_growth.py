@@ -8,7 +8,7 @@ aso_time = 0.0
 overall_time = 0.0
 
 def fp_growth_from_file(args):
-    name, minimum_support, minimum_confidence, limits, detail_result, parallel = args
+    name, minimum_support, minimum_confidence, limits, detailed_result, parallel = args
     if parallel != 'always' and parallel != 'never':
         parallel = 'auto'
     
@@ -30,21 +30,26 @@ def fp_growth_from_file(args):
     # end FIS_time
     FIS_time = time.time() - FIS_time
 
+    print('frequency item set: ', FIS_time, 'seconds')
+
     #start aso_time
     aso_time = time.time()
     
     # calculating association rule
     if (len(freq_item) < 400000 and parallel == 'auto') or parallel == 'never':
-        rules = asso_rules.caluculate_association_rule(freq_item, minimum_confidence, detail_result)
+        rules = asso_rules.caluculate_association_rule(freq_item, minimum_confidence, detailed_result)
     else:
-        rules = asso_rules.caluculate_association_rule_parallel(freq_item, minimum_confidence, detail_result)
+        rules = asso_rules.caluculate_association_rule_parallel(freq_item, minimum_confidence, detailed_result)
     
     # end all the others timers
     end_time = time.time()
     aso_time = end_time - aso_time
     overall_time = end_time - overall_time
     
-    return (freq_item, get_each_number(freq_item)) if detail_result else get_each_number(freq_item), rules
+    print('assciation rules: ', aso_time, 'seconds')
+    print('overall time: ', overall_time, 'seconds')
+    
+    return (freq_item, get_each_number(freq_item)) if detailed_result else get_each_number(freq_item), rules
 
 def get_from_file(file_name):
     data_path = os.path.join(os.path.dirname(__file__), '..\\data\\' + file_name)
