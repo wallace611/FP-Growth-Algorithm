@@ -9,7 +9,7 @@ if __name__ == '__main__':
         "minimum confidence": 0.8,
         "limit": 5,
         "write file": False,
-        "parallel processing": "auto"
+        "parallel processing": "auto" # "always", "never", others = "auto"
     }
     
     freq, rule = fp_growth.fp_growth_from_file(args.values())
