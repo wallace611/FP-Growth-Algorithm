@@ -3,27 +3,28 @@ from source import fp_growth
 
 if __name__ == '__main__':
     # settings
-    file_name = "mushroom.dat"
-    minimum_support = 0.1
-    minimum_confindent = 0.8
-    limit = 10
-    return_count_only = True
-    parallel_processing = "auto" # auto always never
+    args = {
+        "data file": "mushroom.dat",
+        "minimum support": 0.1,
+        "minimum confident": 0.8,
+        "limit": 10,
+        "write file": True,
+        "parallel processing": "auto"
+    }
     
-    freq, rule = fp_growth.fp_growth_from_file(
-        name=file_name, 
-        minimum_support=minimum_support, 
-        minimum_confidence=minimum_confindent, 
-        limits=limit, 
-        return_count_only=return_count_only, 
-        parallel=parallel_processing)
+    freq, rule = fp_growth.fp_growth_from_file(args.values())
     
-    if return_count_only:
-        print("frequency item set: {}".format(freq))
-        print("association rules: {}".format(rule))
-    else:
+    if args["write file"]:
         print("frequency item set: {}".format(freq[1]))
         print("association rules: {}".format(rule[1]))
+    else:
+        print("frequency item set: {}".format(freq))
+        print("association rules: {}".format(rule))
+    
+    print()
     
     for name, timer in fp_growth.get_time():
         print(name, timer)
+        
+    if args["write file"]:
+        fp_growth.write_in_file(freq, rule, args, fp_growth.get_time())

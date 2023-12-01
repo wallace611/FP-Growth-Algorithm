@@ -7,7 +7,8 @@ FIS_time = 0.0
 aso_time = 0.0
 overall_time = 0.0
 
-def fp_growth_from_file(name, minimum_support=0.0, minimum_confidence=0.0, limits=0, return_count_only=True, parallel='auto'):
+def fp_growth_from_file(args):
+    name, minimum_support, minimum_confidence, limits, detail_result, parallel = args
     if parallel != 'always' and parallel != 'never':
         parallel = 'auto'
     
@@ -34,16 +35,16 @@ def fp_growth_from_file(name, minimum_support=0.0, minimum_confidence=0.0, limit
     
     # calculating association rule
     if (len(freq_item) < 400000 and parallel == 'auto') or parallel == 'never':
-        rules = asso_rules.caluculate_association_rule(freq_item, minimum_confidence, return_count_only)
+        rules = asso_rules.caluculate_association_rule(freq_item, minimum_confidence, detail_result)
     else:
-        rules = asso_rules.caluculate_association_rule_parallel(freq_item, minimum_confidence, return_count_only)
+        rules = asso_rules.caluculate_association_rule_parallel(freq_item, minimum_confidence, detail_result)
     
     # end all the others timers
     end_time = time.time()
     aso_time = end_time - aso_time
     overall_time = end_time - overall_time
     
-    return get_each_number(freq_item) if return_count_only else (freq_item, get_each_number(freq_item)), rules
+    return (freq_item, get_each_number(freq_item)) if detail_result else get_each_number(freq_item), rules
 
 def get_from_file(file_name):
     data_path = os.path.join(os.path.dirname(__file__), '..\\data\\' + file_name)
@@ -66,3 +67,31 @@ def get_time():
     yield "frequency item set:", FIS_time
     yield "association rule:", aso_time
     yield "overall time:", overall_time
+
+def write_in_file(freq_item_set, association_rule, args, time_gen):
+    print("\nwriting file...")
+    
+    now = time.strftime("%Y-%m-%d,%H-%M-%S")
+    path = os.path.join('results\\' + now + '.dat')
+    file_to_write = open(path, 'x')
+    
+    file_to_write.write(str(now) + '\n\n')
+    
+    for item in args.items():
+        file_to_write.write(str(item).replace("'", '').replace(',', ':').strip('()') + '\n')
+    
+    file_to_write.write('\nfrequency item set: ' + str(freq_item_set[1]) + '\n')
+    file_to_write.write('association rules: ' + str(association_rule[1]) + '\n')
+    
+    for name, _time in time_gen:
+        file_to_write.write('\n' + str(name) + str(_time))
+    
+    file_to_write.write('\n\nfrequency item set: \n')
+    for itemSet in freq_item_set[0]:
+        file_to_write.write(str(itemSet).strip('()') + '\n')
+    
+    file_to_write.write('\n\nassociation rules: \n')
+    for rules in association_rule[0]:
+        file_to_write.write(str(rules).strip('[]') + '\n')
+    
+    print("done, the file located at: \"{}\"".format(path))

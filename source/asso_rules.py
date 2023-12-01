@@ -28,61 +28,61 @@ def associationRuleCount(freqItemSet, minimum_confidence):
     return rules
 
 def calculate_confidence(args):
-    itemSet, itemSetSup, minConf, supportCache, return_count = args
+    itemSet, itemSetSup, minConf, supportCache, detail_result = args
     subsets = powerset(itemSet)
-    if return_count:
-        rules = 0
-    else:
+    if detail_result:
         rules = []
+    else:
+        rules = 0
     for s in subsets:
         if len(s) > 0:
             confidence = float(itemSetSup / supportCache.get(s, 0))
             if confidence >= minConf:
-                if return_count:
-                    rules += 1
-                else:
+                if detail_result:
                     rules.append([set(s), set(set(itemSet).difference(s)), confidence])
+                else:
+                    rules += 1
     return rules
 
-def caluculate_association_rule_parallel(freqItemSet, minConf, return_count=False):
+def caluculate_association_rule_parallel(freqItemSet, minConf, detail_result=False):
     supportCache = mp.Manager().dict()
     supportCache = {tuple(itemSet): support for itemSet, support in freqItemSet}
 
     pool = mp.Pool(mp.cpu_count())  # 使用 CPU 核心數量的進程池
 
-    args_list = [(itemSet, itemSetSup, minConf, supportCache, return_count) for itemSet, itemSetSup in freqItemSet]
+    args_list = [(itemSet, itemSetSup, minConf, supportCache, detail_result) for itemSet, itemSetSup in freqItemSet]
     results = pool.map(calculate_confidence, args_list)
 
     pool.close()
     pool.join()
 
-    if return_count:
-        rules = sum(results)
-    else:
+    if detail_result:
         rules = []
         for result in results:
             rules.extend(result)
         rules = (rules, len(rules))
+    else:
+        rules = sum(results)
 
     return rules
 
-def caluculate_association_rule(freqItemSet, minConf, return_count=False):
+def caluculate_association_rule(freqItemSet, minConf, detail_result=False):
     supportCache = {tuple(itemSet): support for itemSet, support in freqItemSet}
-    if return_count:
-            rules = 0
-    else:
+    if detail_result:
         rules = []
+    else:
+        rules = 0
     for itemSet, itemSetSup in freqItemSet:
         subsets = powerset(itemSet)
         for s in subsets:
             if len(s) > 0:
                 confidence = float(itemSetSup / supportCache.get(s, 0))
                 if confidence >= minConf:
-                    if return_count:
-                        rules += 1
-                    else:
+                    if detail_result:
                         rules.append([set(s), set(set(itemSet).difference(s)), confidence])
-    if not return_count:
+                    else:
+                        rules += 1
+    if detail_result:
         rules = (rules, len(rules))
 
     return rules
