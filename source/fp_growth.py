@@ -8,10 +8,16 @@ aso_time = 0.0
 overall_time = 0.0
 
 def fp_growth_from_file(args):
-    name, minimum_support, minimum_confidence, limits, detailed_result, parallel = args
+    name, minimum_support, minimum_confidence, limits, detailed_result, parallel = args.values()
     if parallel != 'always' and parallel != 'never':
         parallel = 'auto'
+        
+    print('\nSettings: ')
+    for item in args.items():
+        print('\t' + str(item).strip('()').replace("'", '').replace(',', ':'))
+    print()
     
+
     global FIS_time
     global aso_time
     global overall_time

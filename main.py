@@ -7,17 +7,21 @@ if __name__ == '__main__':
         "data file": "mushroom.dat",
         "minimum support": 0.1,
         "minimum confidence": 0.8,
-        "limit": 5,
-        "write file": False,
+        "limit": 10,
+        "write file": False, # False for better performance
         "parallel processing": "auto" # "always", "never", others = "auto"
     }
     
-    freq, rule = fp_growth.fp_growth_from_file(args.values())
+    freq, rule = fp_growth.fp_growth_from_file(args)
     
     if args["write file"]:
-        print("\nfrequency item set: {}".format(freq[1]))
-        print("association rules: {}".format(rule[1]))
+        print("\nfrequency item set:")
+        for item in freq[1].items():
+            print('|L^{}|={}'.format(item[0], item[1]))
+        print("\nassociation rules: {}".format(rule[1]))
         fp_growth.write_in_file(freq, rule, args, fp_growth.get_time())
     else:
-        print("\nfrequency item set: {}".format(freq))
-        print("association rules: {}".format(rule))
+        print("\nfrequency item set:")
+        for item in freq.items():
+            print('|L^{}|={}'.format(item[0], item[1]))
+        print("\nassociation rules: {}".format(rule))
