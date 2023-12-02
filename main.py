@@ -8,7 +8,7 @@ if __name__ == '__main__':
         "minimum support": 0.1,
         "minimum confidence": 0.8,
         "limit": 10,
-        "write file": False, # False for better performance
+        "write file": True,
         "parallel processing": "auto" # "always", "never", others = "auto"
     }
     
