@@ -12,10 +12,10 @@ def fp_growth_from_file(args):
     if parallel != 'always' and parallel != 'never':
         parallel = 'auto'
         
-    print('\nSettings: ')
+    print('\nSettings:\n')
     for item in args.items():
         print('\t' + str(item).strip('()').replace("'", '').replace(',', ':'))
-    print()
+    print('\nTimes:\n')
     
 
     global FIS_time
@@ -36,7 +36,7 @@ def fp_growth_from_file(args):
     # end FIS_time
     FIS_time = time.time() - FIS_time
 
-    print('frequency item set: ', FIS_time, 'seconds')
+    print('\tfrequency item set: ', FIS_time, 'seconds')
 
     #start aso_time
     aso_time = time.time()
@@ -52,8 +52,8 @@ def fp_growth_from_file(args):
     aso_time = end_time - aso_time
     overall_time = end_time - overall_time
     
-    print('assciation rules: ', aso_time, 'seconds')
-    print('overall time: ', overall_time, 'seconds')
+    print('\tassciation rules: ', aso_time, 'seconds')
+    print('\toverall time: ', overall_time, 'seconds')
     
     return (freq_item, get_each_number(freq_item)) if detailed_result else get_each_number(freq_item), rules
 
