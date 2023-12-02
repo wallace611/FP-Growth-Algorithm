@@ -7,8 +7,8 @@ if __name__ == '__main__':
         "data file": "mushroom.dat",
         "minimum support": 0.1,
         "minimum confidence": 0.8,
-        "limit": 10,
-        "write file": True,
+        "limit": 5,
+        "write file": False,
         "parallel processing": "auto" # "always", "never", others = "auto"
     }
     

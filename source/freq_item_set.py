@@ -1,28 +1,31 @@
 from collections import defaultdict, namedtuple
 
 def find_frequent_itemsets(transactions, minimum_support, limit=0):
-
+    # count occdurrences of items in transactions
     items = defaultdict(lambda: 0)
-
     for transaction in transactions:
         for item in transaction:
             items[item] += 1
 
-    # 频繁1项集筛选
+    # filter items by minimum support
     items = dict((item, support) for item, support in items.items()
         if support >= minimum_support)
 
+    # filter and sort transactions based on frequent items
     def clean_transaction(transaction):
         transaction = filter(lambda v: v in items, transaction)
-        transaction_list = list(transaction)   # 为了防止变量在其他部分调用，这里引入临时变量transaction_list
-        transaction_list.sort(key=lambda v: items[v], reverse=True)
+        transaction_list = list(transaction)
+        transaction_list.sort(key=lambda v: items[v], reverse=True) # sorting
         return transaction_list
 
     # create FPTree
     master = FPTree()
+    
+    # add filtered and sorted transaction to FPTree
     for transaction in map(clean_transaction, transactions):
         master.add(transaction)
 
+    # recursive to find frequent item set with suffixes
     def find_with_suffix(tree, suffix):
         for item, nodes in tree.items():
             support = sum(n.count for n in nodes)
@@ -54,25 +57,27 @@ class FPTree(object):
         # 创建根节点
         return self._root
 
+    # add transaction
     def add(self, transaction):
-        # 添加节点
+        # start from root
         point = self._root
 
         for item in transaction:
             next_point = point.search(item)
             if next_point:
-                #当前已存在节点
+                # node exist
                 next_point.increment()
             else:
-                # 创建节点
+                # node doesn't exist
+                # create node
                 next_point = FPNode(self, item)
                 point.add(next_point)
 
-                # 更新链路
                 self._update_route(next_point)
 
             point = next_point
 
+    # update to route in the tree
     def _update_route(self, point):
         assert self is point.tree
 
@@ -81,7 +86,7 @@ class FPTree(object):
             route[1].neighbor = point # route[1] is the tail
             self._routes[point.item] = self.Route(route[0], point)
         except KeyError:
-            # 开启新节点
+            # create new node
             self._routes[point.item] = self.Route(point, point)
 
     def items(self):
@@ -100,8 +105,10 @@ class FPTree(object):
             yield node
             node = node.neighbor
 
+    # yield prefix paths for an item
     def prefix_paths(self, item):
-
+        
+        # find all nodes from node to root
         def collect_path(node):
             path = []
             while node and not node.root:
@@ -112,6 +119,7 @@ class FPTree(object):
 
         return (collect_path(node) for node in self.nodes(item))
 
+    # print the tree structure
     def inspect(self):
         #print('Tree:')
         self.root.inspect(1)
@@ -123,6 +131,7 @@ class FPTree(object):
             for node in nodes:
                 print('    %r' % node)
 
+# construct a conditional tree from path
 def conditional_tree_from_paths(paths):
     tree = FPTree()
     condition_item = None
@@ -146,7 +155,7 @@ def conditional_tree_from_paths(paths):
 
     assert condition_item is not None
 
-    # 计算节点
+    # calculate nodes
     for path in tree.prefix_paths(condition_item):
         count = path[-1].count
         for node in reversed(path[:-1]):
