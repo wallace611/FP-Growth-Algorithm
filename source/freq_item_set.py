@@ -8,8 +8,7 @@ def find_frequent_itemsets(transactions, minimum_support, limit=0):
             items[item] += 1
 
     # filter items by minimum support
-    items = dict((item, support) for item, support in items.items()
-        if support >= minimum_support)
+    items = dict((item, support) for item, support in items.items()if support >= minimum_support)
 
     # filter and sort transactions based on frequent items
     def clean_transaction(transaction):
@@ -41,6 +40,38 @@ def find_frequent_itemsets(transactions, minimum_support, limit=0):
 
     for itemset in find_with_suffix(master, []):
         yield itemset
+
+# construct a conditional tree from path
+def conditional_tree_from_paths(paths):
+    tree = FPTree()
+    condition_item = None
+    items = set()
+
+    for path in paths:
+        if condition_item is None:
+            condition_item = path[-1].item
+
+        point = tree.root
+        for node in path:
+            next_point = point.search(node.item)
+            if not next_point:
+                # Add a new node to the tree.
+                items.add(node.item)
+                count = node.count if node.item == condition_item else 0
+                next_point = FPNode(tree, node.item, count)
+                point.add(next_point)
+                tree._update_route(next_point)
+            point = next_point
+
+    assert condition_item is not None
+
+    # calculate nodes
+    for path in tree.prefix_paths(condition_item):
+        count = path[-1].count
+        for node in reversed(path[:-1]):
+            node._count += count
+
+    return tree
 
 class FPTree(object):
 
@@ -130,38 +161,6 @@ class FPTree(object):
             #print('  %r' % item)
             for node in nodes:
                 print('    %r' % node)
-
-# construct a conditional tree from path
-def conditional_tree_from_paths(paths):
-    tree = FPTree()
-    condition_item = None
-    items = set()
-
-    for path in paths:
-        if condition_item is None:
-            condition_item = path[-1].item
-
-        point = tree.root
-        for node in path:
-            next_point = point.search(node.item)
-            if not next_point:
-                # Add a new node to the tree.
-                items.add(node.item)
-                count = node.count if node.item == condition_item else 0
-                next_point = FPNode(tree, node.item, count)
-                point.add(next_point)
-                tree._update_route(next_point)
-            point = next_point
-
-    assert condition_item is not None
-
-    # calculate nodes
-    for path in tree.prefix_paths(condition_item):
-        count = path[-1].count
-        for node in reversed(path[:-1]):
-            node._count += count
-
-    return tree
 
 class FPNode(object):
 
