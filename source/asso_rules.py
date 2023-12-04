@@ -30,7 +30,6 @@ def calculate_confidence(args):
     return rules
 
 def caluculate_association_rule_parallel(freqItemSet, minConf, detailed_result=False):
-    supportCache = mp.Manager().dict()
     supportCache = {tuple(itemSet): support for itemSet, support in freqItemSet}
 
     pool = mp.Pool(mp.cpu_count())  # 使用 CPU 核心數量的進程池
